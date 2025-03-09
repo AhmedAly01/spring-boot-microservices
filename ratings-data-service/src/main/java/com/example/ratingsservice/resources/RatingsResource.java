@@ -2,23 +2,28 @@ package com.example.ratingsservice.resources;
 
 import com.example.ratingsservice.models.Rating;
 import com.example.ratingsservice.models.UserRating;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.example.ratingsservice.repositories.RatingRepository;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/ratings")
 public class RatingsResource {
 
-    @RequestMapping("/{userId}")
-    public UserRating getRatingsOfUser(@PathVariable String userId) {
-        List<Rating> ratings = Arrays.asList(
-                new Rating("550", 4)
-        );
+    private final RatingRepository ratingRepository;
 
-        return new UserRating(ratings);
+    public RatingsResource(RatingRepository ratingRepository) {
+        this.ratingRepository = ratingRepository;
+    }
+
+    @RequestMapping("/{userId}")
+    public List<Rating> getRatingsOfUser(@PathVariable Long userId) {
+        return ratingRepository.findByUserId(userId)
+                .stream()
+                .map(rating -> new Rating(rating.getMovieId(), rating.getRating()))
+                .collect(Collectors.toList());
     }
 }

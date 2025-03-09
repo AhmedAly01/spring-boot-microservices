@@ -1,4 +1,4 @@
-package com.example.ratingsservice.models;
+package com.example.trendingmovies.models;
 
 import javax.persistence.*;
 

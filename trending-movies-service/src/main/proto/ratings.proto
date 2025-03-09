@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package ratings;
+
+import "google/protobuf/empty.proto";
+
+option java_package = "com.example.trendingmovies.grpc";  // Make sure this matches your package structure
+option java_multiple_files = true;
+
+service TrendingMoviesService {
+    rpc GetTrendingMovies(google.protobuf.Empty) returns (TrendingMoviesResponse);
+}
+
+message TrendingMoviesResponse {
+    repeated Movie movies = 1;
+}
+
+message Movie {
+    string movieId = 1;
+    double rating = 2;
+}
