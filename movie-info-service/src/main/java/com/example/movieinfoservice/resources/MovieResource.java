@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import java.util.Optional;
+import org.springframework.jdbc.core.JdbcTemplate;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/movies")
@@ -19,10 +21,12 @@ public class MovieResource {
 
     private RestTemplate restTemplate;
     private final MovieRepository movieRepository;
+    private final JdbcTemplate jdbcTemplate;
 
-    public MovieResource(RestTemplate restTemplate, MovieRepository movieRepository) {
+    public MovieResource(RestTemplate restTemplate, MovieRepository movieRepository, JdbcTemplate jdbcTemplate) {
         this.restTemplate = restTemplate;
         this.movieRepository = movieRepository;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @RequestMapping("/{movieId}")
@@ -35,18 +39,29 @@ public class MovieResource {
 
         System.out.println("Cache Miss! Fetching from API...");
 
-        // Get the movie info from TMDB
-        final String url = "https://api.themoviedb.org/3/movie/" + movieId + "?api_key=" + apiKey;
-        MovieSummary movieSummary = restTemplate.getForObject(url, MovieSummary.class);
-
-        if (movieSummary == null) {
-            return null;
-        }
-
-        Movie newMovie = new Movie(movieId, movieSummary.getTitle(), movieSummary.getOverview());
+        Movie newMovie = getMovieFromDatabase(movieId);
         movieRepository.save(newMovie);
         System.out.println("Movie added to cache");
 
         return newMovie;
+    }
+
+    public Movie getMovieFromDatabase(String movieId) {
+        String sql = "SELECT id, name, description FROM movies WHERE id = ?";
+
+        // Query the database
+        Map<String, Object> movieData = jdbcTemplate.queryForMap(sql, movieId);
+
+        // Check if data exists
+        if (movieData == null || movieData.isEmpty()) {
+            return null;
+        }
+
+        // Create and return a new Movie object
+        return new Movie(
+                movieData.get("id").toString(),
+                movieData.get("name").toString(),
+                movieData.get("description").toString()
+        );
     }
 }
