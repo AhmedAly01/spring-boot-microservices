@@ -18,4 +18,6 @@ message TrendingMoviesResponse {
 message Movie {
     string movieId = 1;
     double rating = 2;
+    string name = 3;
+    string description = 4;
 }
