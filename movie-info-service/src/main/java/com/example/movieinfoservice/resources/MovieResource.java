@@ -39,6 +39,13 @@ public class MovieResource {
 
         System.out.println("Cache Miss! Fetching from API...");
 
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            e.printStackTrace();
+        }
+
         Movie newMovie = getMovieFromDatabase(movieId);
         movieRepository.save(newMovie);
         System.out.println("Movie added to cache");
